@@ -1,0 +1,8 @@
+# List tests to exclude by name
+# Uncomment a line to exclude the corresponding test
+
+# Access Control
+# SSL Configuration
+# Injection
+# Security Misconfiguration
+# Outdated Components

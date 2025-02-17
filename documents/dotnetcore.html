@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWASP Top 10 Web Penetration Tests Using .NET Core</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        code {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>OWASP Top 10 Web Penetration Tests Using .NET Core</h1>
+    <h2>Introduction</h2>
+    <p>This guide provides an overview of how to use .NET Core with C# to perform web penetration tests based on the OWASP Top 10 vulnerabilities that can be tested natively using .NET Core.</p>
+    
+    <h2>OWASP Top 10 Overview</h2>
+    <p>The OWASP Top 10 is a standard awareness document for developers and web application security. It represents a broad consensus about the most critical security risks to web applications.</p>
+    
+    <h2>Using .NET Core HttpClient</h2>
+    <p>.NET Core's <code>HttpClient</code> can be used to send HTTP requests and analyze responses, which is useful for identifying vulnerabilities.</p>
+    
+    <h2>Example: Testing for Injection Flaws</h2>
+    <pre><code>
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace OwaspTesting
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            var url = "http://example.com/vulnerable";
+            var client = new HttpClient();
+            var response = await client.GetAsync(url);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine("Injection flaw detected!");
+            }
+        }
+    }
+}
+    </code></pre>
+    
+    <h2>Example: Testing for Broken Authentication</h2>
+    <pre><code>
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace OwaspTesting
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            var url = "http://example.com/login";
+            var client = new HttpClient();
+            var response = await client.GetAsync(url);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine("Broken authentication detected!");
+            }
+        }
+    }
+}
+    </code></pre>
+    
+    <h2>Example: Testing for Sensitive Data Exposure</h2>
+    <pre><code>
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace OwaspTesting
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            var url = "http://example.com/secure";
+            var client = new HttpClient();
+            var response = await client.GetAsync(url);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine("Sensitive data exposure detected!");
+            }
+        }
+    }
+}
+    </code></pre>
+    
+    <h2>Example: Testing for Cross-Site Scripting (XSS)</h2>
+    <pre><code>
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace OwaspTesting
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            var url = "http://example.com";
+            var payload = "&lt;script&gt;alert('XSS')&lt;/script&gt;";
+            var client = new HttpClient();
+            var response = await client.GetAsync($"{url}?input={payload}");
+            var content = await response.Content.ReadAsStringAsync();
+            if (content.Contains("&lt;script&gt;alert('XSS')&lt;/script&gt;"))
+            {
+                Console.WriteLine("XSS vulnerability detected!");
+            }
+        }
+    }
+}
+    </code></pre>
+    
+    <h2>Conclusion</h2>
+    <p>Using .NET Core's <code>HttpClient</code>, you can effectively test for various OWASP Top 10 vulnerabilities. This guide provides a starting point for your penetration testing efforts.</p>
+    
+    <h2>References</h2>
+    <ul>
+        <li><a href="https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url">OWASP Information Exposure Through Query Strings</a></li>
+        <li><a href="https://portswigger.net/support/using-burp-to-test-for-the-owasp-top-ten">Using Burp to Test for the OWASP Top Ten</a></li>
+        <li><a href="https://www.stationx.net/owasp-top-10-penetration-testing/">OWASP Top 10 for WebApp Penetration Testing</a></li>
+    </ul>
+</body>
+</html>

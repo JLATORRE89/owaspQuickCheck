@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWASP Top 10 Web Penetration Tests Using curl</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        code {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>OWASP Top 10 Web Penetration Tests Using curl</h1>
+    <h2>Introduction</h2>
+    <p>This guide provides an overview of how to use <code>curl</code> to perform web penetration tests based on the OWASP Top 10 vulnerabilities that can be tested natively using curl.</p>
+    
+    <h2>OWASP Top 10 Overview</h2>
+    <p>The OWASP Top 10 is a standard awareness document for developers and web application security. It represents a broad consensus about the most critical security risks to web applications.</p>
+    
+    <h2>Using curl</h2>
+    <p>The <code>curl</code> command-line tool can be used to send HTTP requests and analyze responses, which is useful for identifying vulnerabilities.</p>
+    
+    <h2>Example: Testing for Injection Flaws</h2>
+    <pre><code>
+curl -X GET "http://example.com/vulnerable?input=' OR '1'='1"
+    </code></pre>
+    
+    <h2>Example: Testing for Broken Authentication</h2>
+    <pre><code>
+curl -X POST -d "username=admin&password=admin" "http://example.com/login"
+    </code></pre>
+    
+    <h2>Example: Testing for Sensitive Data Exposure</h2>
+    <pre><code>
+curl -X GET "http://example.com/secure"
+    </code></pre>
+    
+    <h2>Example: Testing for Cross-Site Scripting (XSS)</h2>
+    <pre><code>
+curl -X GET "http://example.com?input=&lt;script&gt;alert('XSS')&lt;/script&gt;"
+    </code></pre>
+    
+    <h2>Conclusion</h2>
+    <p>Using <code>curl</code>, you can effectively test for various OWASP Top 10 vulnerabilities. This guide provides a starting point for your penetration testing efforts.</p>
+    
+    <h2>References</h2>
+    <ul>
+        <li><a href="https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url">OWASP Information Exposure Through Query Strings</a></li>
+        <li><a href="https://portswigger.net/support/using-burp-to-test-for-the-owasp-top-ten">Using Burp to Test for the OWASP Top Ten</a></li>
+        <li><a href="https://www.stationx.net/owasp-top-10-penetration-testing/">OWASP Top 10 for WebApp Penetration Testing</a></li>
+    </ul>
+</body>
+</html>

@@ -8,6 +8,9 @@ import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import openpyxl
+from urllib.parse import urlparse
+# Import the HackerOne exclusions module
+from hackerone_exclusions import should_exclude_test, get_all_exclusions, get_excluded_tests
 
 class QuickCheckApp:
     def __init__(self):
@@ -21,6 +24,23 @@ class QuickCheckApp:
         self.dropdown.pack(pady=5)
         self.open_button = ttk.Button(self.root, text="Open Document", command=self.open_document)
         self.open_button.pack(pady=5)
+
+        # HackerOne exclusions checkbox
+        self.exclude_hackerone = tk.BooleanVar(value=False)
+        self.exclude_hackerone_checkbox = ttk.Checkbutton(
+            self.root, 
+            text="Exclude HackerOne Core Ineligible Findings", 
+            variable=self.exclude_hackerone
+        )
+        self.exclude_hackerone_checkbox.pack(pady=5)
+        
+        # Add a button to view HackerOne exclusions
+        self.view_exclusions_button = ttk.Button(
+            self.root, 
+            text="View HackerOne Exclusions", 
+            command=self.view_hackerone_exclusions
+        )
+        self.view_exclusions_button.pack(pady=5)
 
         self.test_button = ttk.Button(self.root, text="Run Security Tests", command=self.run_tests)
         self.test_button.pack(pady=10)
@@ -41,6 +61,34 @@ class QuickCheckApp:
             file_path = os.path.join(os.getcwd(), "documents", selected_file)
             webbrowser.open(file_path)
 
+    def view_hackerone_exclusions(self):
+        """Display the HackerOne Core Ineligible Findings list"""
+        exclusion_window = tk.Toplevel(self.root)
+        exclusion_window.title("HackerOne Core Ineligible Findings")
+        
+        # Add a scrollable text area
+        frame = ttk.Frame(exclusion_window)
+        frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        scrollbar = ttk.Scrollbar(frame)
+        scrollbar.pack(side="right", fill="y")
+        
+        text_area = tk.Text(frame, wrap="word", yscrollcommand=scrollbar.set)
+        text_area.pack(fill="both", expand=True)
+        
+        scrollbar.config(command=text_area.yview)
+        
+        # Insert the exclusions list
+        text_area.insert("1.0", "HackerOne Core Ineligible Findings:\n\n")
+        for i, item in enumerate(get_all_exclusions(), 1):
+            text_area.insert("end", f"{i}. {item}\n")
+        
+        text_area.insert("end", "\n\nExcluded Tests:\n")
+        for test in get_excluded_tests():
+            text_area.insert("end", f"- {test}\n")
+        
+        text_area.config(state="disabled")  # Make read-only
+
     def check_nmap_installed(self):
         """Check if nmap is installed and prompt the user if it is not"""
         try:
@@ -53,6 +101,9 @@ class QuickCheckApp:
         """Run security tests"""
         self.check_nmap_installed()
         exclusions = self.load_exclusions()
+        
+        # Get HackerOne exclusions flag
+        exclude_hackerone = self.exclude_hackerone.get()
 
         target_url = simpledialog.askstring("OWASP Top 10 Test", "Enter the website URL to test:")
         if not target_url:
@@ -63,7 +114,7 @@ class QuickCheckApp:
         headers = {"Security-Research": custom_header_value} if custom_header_value else {}
 
         messagebox.showinfo("OWASP Top 10 Test", "Starting tests. This may take a few moments.")
-        results = self.execute_tests(target_url, headers, exclusions)
+        results = self.execute_tests(target_url, headers, exclusions, exclude_hackerone)
         result_text = "\n".join(results)
 
         messagebox.showinfo("OWASP Top 10 Test Results", result_text)
@@ -79,7 +130,7 @@ class QuickCheckApp:
                         exclusions.append(line)
         return exclusions
 
-    def execute_tests(self, target_url, headers, exclusions):
+    def execute_tests(self, target_url, headers, exclusions, exclude_hackerone=False):
         """Execute security tests based on exclusions."""
         test_mapping = {
             "Access Control": self.check_access_control,
@@ -91,7 +142,13 @@ class QuickCheckApp:
 
         results = []
         for test_name, test_func in test_mapping.items():
-            if test_name not in exclusions:
+            # Skip tests in exclusions list or excluded by HackerOne
+            if test_name in exclusions or (exclude_hackerone and should_exclude_test(test_name, exclude_hackerone)):
+                if exclude_hackerone and should_exclude_test(test_name, exclude_hackerone):
+                    results.append(f"[{test_name}] Skipped - excluded by HackerOne Core Ineligible Findings")
+                else:
+                    results.append(f"[{test_name}] Skipped - in exclusions list")
+            else:
                 if test_name == "Injection":
                     results.append(test_func(target_url, "' OR '1'='1", headers))
                 elif test_name == "Access Control":
@@ -129,14 +186,16 @@ class QuickCheckApp:
         except requests.RequestException as e:
             return f"[Injection] Error testing {url}: {e}"
 
-    def check_security_misconfigurations(self):
+    def check_security_misconfigurations(self, url):
         try:
-            result = subprocess.run(["nmap", "-p", "1-65535", "127.0.0.1"], capture_output=True, text=True)
+            parsed_url = urlparse(url)
+            hostname = parsed_url.hostname or "127.0.0.1"
+            result = subprocess.run(["nmap", "-p", "1-65535", hostname], capture_output=True, text=True)
             return f"[Security Misconfiguration] Open ports:\n{result.stdout}"
         except FileNotFoundError:
             return "[Security Misconfiguration] Nmap is not installed. Please install nmap."
 
-    def check_outdated_components(self):
+    def check_outdated_components(self, url):
         try:
             result = subprocess.run(["safety", "check", "--json"], capture_output=True, text=True)
             vulnerabilities = json.loads(result.stdout)
@@ -147,6 +206,8 @@ class QuickCheckApp:
                 return "[Outdated Components] No vulnerabilities detected."
         except FileNotFoundError:
             return "[Outdated Components] Safety is not installed. Please install safety."
+        except json.JSONDecodeError:
+            return "[Outdated Components] Error parsing safety output."
 
 if __name__ == "__main__":
     QuickCheckApp()

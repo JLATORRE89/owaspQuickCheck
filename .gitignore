@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Reports
+owasp_report_*.json
+owasp_report_*.html
+owasp_report_*.pdf
+owasp_report_*.xlsx
+OWASP_Top_10_Results.xlsx
+
+# Test outputs
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
